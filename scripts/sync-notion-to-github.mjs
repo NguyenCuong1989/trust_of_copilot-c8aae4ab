@@ -7,12 +7,13 @@ const notion = new Client({
 
 const repoFull = process.env.GITHUB_REPOSITORY;
 const ghToken = process.env.GITHUB_TOKEN;
-const dataSourceId = process.env.NOTION_DATABASE_ID;
+const notionApiKey = process.env.NOTION_API_KEY;
+const notionTargetId = process.env.NOTION_DATA_SOURCE_ID || process.env.NOTION_DATABASE_ID;
 
 if (!repoFull) throw new Error("Missing GITHUB_REPOSITORY");
 if (!ghToken) throw new Error("Missing GITHUB_TOKEN");
-if (!process.env.NOTION_API_KEY) throw new Error("Missing NOTION_API_KEY");
-if (!dataSourceId) throw new Error("Missing NOTION_DATABASE_ID");
+if (!notionApiKey) throw new Error("Missing NOTION_API_KEY");
+if (!notionTargetId) throw new Error("Missing NOTION_DATA_SOURCE_ID or NOTION_DATABASE_ID");
 
 const [owner, repo] = repoFull.split("/");
 
@@ -56,6 +57,36 @@ function slugify(s = "") {
 function isClosedStatus(status = "") {
   const s = status.toLowerCase();
   return ["done", "complete", "completed", "archived", "closed"].includes(s);
+}
+
+function normalizeNotionId(value, envName) {
+  const raw = String(value || "").trim().replace(/^['\"]|['\"]$/g, "");
+  const dashed = raw.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0];
+  if (dashed) return dashed.toLowerCase();
+
+  const compact = raw.match(/[0-9a-fA-F]{32}/)?.[0];
+  if (compact) {
+    return `${compact.slice(0, 8)}-${compact.slice(8, 12)}-${compact.slice(12, 16)}-${compact.slice(16, 20)}-${compact.slice(20)}`.toLowerCase();
+  }
+
+  throw new Error(`${envName} must contain a Notion UUID or URL containing a UUID`);
+}
+
+async function resolveDataSourceId() {
+  const envName = process.env.NOTION_DATA_SOURCE_ID ? "NOTION_DATA_SOURCE_ID" : "NOTION_DATABASE_ID";
+  const id = normalizeNotionId(notionTargetId, envName);
+
+  if (process.env.NOTION_DATA_SOURCE_ID) return id;
+
+  const database = await notion.databases.retrieve({ database_id: id });
+  const dataSources = Array.isArray(database.data_sources) ? database.data_sources : [];
+  const dataSourceId = dataSources[0]?.id;
+
+  if (!dataSourceId) {
+    throw new Error("NOTION_DATABASE_ID resolved, but the database has no visible data_sources for this integration");
+  }
+
+  return normalizeNotionId(dataSourceId, "database.data_sources[0].id");
 }
 
 function getBody(page) {
@@ -177,6 +208,7 @@ async function syncPage(page) {
   }
 }
 
+const dataSourceId = await resolveDataSourceId();
 let cursor = undefined;
 
 do {
