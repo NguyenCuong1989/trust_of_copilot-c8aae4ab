@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '*/30 * * * *'
+  push:
+    paths:
+      - '.github/workflows/notion-sync.yml'
+      - 'scripts/sync-notion-to-github.mjs'
 
 permissions:
   contents: read
