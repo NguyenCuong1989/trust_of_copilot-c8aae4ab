@@ -2,6 +2,11 @@
   "name": "trust-of-copilot-sync",
   "private": true,
   "type": "module",
+  "scripts": {
+    "connectors:serve": "node server.js",
+    "connectors:health": "node scripts/connector-health.mjs",
+    "connectors:deploy:macos": "bash scripts/deploy-local-connectors.sh"
+  },
   "dependencies": {
     "@notionhq/client": "^5.15.0"
   }
