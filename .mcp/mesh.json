@@ -1,5 +1,13 @@
 {
-  "mesh_version": "2026-04-20",
+  "mesh_version": "2026-07-15",
+  "authority": {
+    "root": "local_hyperai",
+    "source_of_truth": "local",
+    "execution_plane": "local",
+    "external_platform_policy": "optional_adapters",
+    "fail_closed": true,
+    "secrets_policy": "local_secret_store_token_refs_only"
+  },
   "identities": {
     "primary": {
       "email": "nguyencuong.2509@gmail.com",
@@ -31,12 +39,38 @@
     }
   },
   "connectors": {
-    "notion": { "kind": "mcp", "role": "source_of_truth", "enabled": true },
-    "github": { "kind": "mcp", "role": "execution_plane", "enabled": true },
-    "zapier": { "kind": "router", "role": "trigger_router", "enabled": false },
-    "poke": { "kind": "middleware", "role": "bridge", "enabled": false },
-    "dropbox": { "kind": "context_store", "role": "identity_artifacts", "enabled": false },
-    "slack": { "kind": "org_context", "role": "artifact_feed", "enabled": false }
+    "local": {
+      "kind": "root",
+      "role": "authority_and_execution",
+      "enabled": true,
+      "required": true
+    },
+    "notion": {
+      "kind": "adapter",
+      "role": "knowledge_registry",
+      "enabled": true,
+      "required": false,
+      "canonical_data_source": "8a43e9e4-ffde-4dc8-bbc1-b70f4a6c1d8f",
+      "secret_ref": "LOCAL_SECRET_STORE/NOTION_API_KEY"
+    },
+    "github": {
+      "kind": "adapter",
+      "role": "collaboration_mirror",
+      "enabled": true,
+      "required": false,
+      "secret_ref": "LOCAL_SECRET_STORE/GITHUB_TOKEN"
+    },
+    "telegram": {
+      "kind": "transport",
+      "role": "command_transport",
+      "enabled": true,
+      "required": false,
+      "secret_ref": "LOCAL_SECRET_STORE/TELEGRAM_BOT_TOKEN"
+    },
+    "zapier": { "kind": "router", "role": "trigger_router", "enabled": false, "required": false },
+    "poke": { "kind": "middleware", "role": "bridge", "enabled": false, "required": false },
+    "dropbox": { "kind": "context_store", "role": "identity_artifacts", "enabled": false, "required": false },
+    "slack": { "kind": "org_context", "role": "artifact_feed", "enabled": false, "required": false }
   },
   "routing": {
     "default_owner_email": "nguyencuong.2509@gmail.com",
