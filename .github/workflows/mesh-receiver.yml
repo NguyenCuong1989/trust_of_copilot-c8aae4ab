@@ -10,16 +10,24 @@ permissions:
 jobs:
   receive:
     runs-on: ubuntu-latest
-    env:
-      EXPECTED_SOURCE_REPO: NguyenCuong1989/trust_of_copilot
     steps:
-      - name: Receive propagation
+      - name: Validate propagation envelope
+        env:
+          EXPECTED_SOURCE_REPO: ${{ github.repository }}
+          SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
+          SOURCE_WORKFLOW: ${{ github.event.client_payload.source_workflow }}
+          SOURCE_TIMESTAMP: ${{ github.event.client_payload.timestamp }}
         run: |
-          if [ "${{ github.event.client_payload.source_repo }}" != "$EXPECTED_SOURCE_REPO" ]; then
-            echo "Unexpected source_repo=${{ github.event.client_payload.source_repo }}"
+          set -euo pipefail
+          if [ "$SOURCE_REPO" != "$EXPECTED_SOURCE_REPO" ]; then
+            echo "Unexpected source_repo=$SOURCE_REPO"
+            exit 1
+          fi
+          if [ -z "$SOURCE_WORKFLOW" ] || [ -z "$SOURCE_TIMESTAMP" ]; then
+            echo "Invalid propagation envelope"
             exit 1
           fi
           echo "RECEIVED_MCP_PROPAGATION"
-          echo "source_repo=${{ github.event.client_payload.source_repo }}"
-          echo "source_workflow=${{ github.event.client_payload.source_workflow }}"
-          echo "timestamp=${{ github.event.client_payload.timestamp }}"
+          echo "source_repo=$SOURCE_REPO"
+          echo "source_workflow=$SOURCE_WORKFLOW"
+          echo "timestamp=$SOURCE_TIMESTAMP"
