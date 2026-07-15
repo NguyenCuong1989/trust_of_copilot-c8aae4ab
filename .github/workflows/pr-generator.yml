@@ -17,4 +17,5 @@ jobs:
           node-version: '22'
       - run: node scripts/create-pr-from-notion.mjs
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
