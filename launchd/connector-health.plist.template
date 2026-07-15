@@ -4,6 +4,11 @@
 <dict>
   <key>Label</key>
   <string>__LABEL__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NODE_BIN</key>
+    <string>__NODE__</string>
+  </dict>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
