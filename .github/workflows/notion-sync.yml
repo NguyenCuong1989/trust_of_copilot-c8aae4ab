@@ -17,7 +17,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
-      NOTION_DATA_SOURCE_ID: ${{ secrets.NOTION_DATA_SOURCE_ID }}
+      NOTION_DATA_SOURCE_ID: '8a43e9e4-ffde-4dc8-bbc1-b70f4a6c1d8f'
       NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
