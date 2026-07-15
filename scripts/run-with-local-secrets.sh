@@ -4,6 +4,12 @@ set -euo pipefail
 MODE="${1:-}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SECRETS_FILE="${HYPERAI_CONNECTOR_ENV:-$HOME/.config/hyperai/connectors.env}"
+NODE_BIN="${NODE_BIN:-$(command -v node || true)}"
+
+if [[ ! -x "$NODE_BIN" ]]; then
+  echo "Node runtime not found or not executable: $NODE_BIN" >&2
+  exit 69
+fi
 
 if [[ ! -f "$SECRETS_FILE" ]]; then
   echo "Missing local secret store: $SECRETS_FILE" >&2
@@ -25,10 +31,10 @@ cd "$REPO_ROOT"
 
 case "$MODE" in
   server)
-    exec node server.js
+    exec "$NODE_BIN" server.js
     ;;
   health)
-    exec node scripts/connector-health.mjs
+    exec "$NODE_BIN" scripts/connector-health.mjs
     ;;
   *)
     echo "Usage: $0 {server|health}" >&2
