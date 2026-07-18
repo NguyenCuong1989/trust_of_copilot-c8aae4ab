@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node --check api/telegram/dispatch.js",
+  "buildCommand": "node --check api/telegram/dispatch.js && node --test api/telegram/dispatch.test.js",
   "outputDirectory": "public",
   "cleanUrls": true
 }
