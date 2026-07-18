@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { timingSafeEqual } from "node:crypto";
 
 const TELEGRAM_DISPATCH_PATH = "/api/telegram/dispatch";
 const RUNTIME_MESH_PATH = path.join(process.cwd(), ".mcp", "mesh.json");
@@ -40,6 +41,17 @@ function sanitizePayload(body) {
   return safePayload;
 }
 
+function verifyToken(suppliedToken, expectedToken) {
+  if (expectedToken.length < 20 || suppliedToken.length !== expectedToken.length) {
+    return false;
+  }
+
+  return timingSafeEqual(
+    Buffer.from(suppliedToken, "utf8"),
+    Buffer.from(expectedToken, "utf8"),
+  );
+}
+
 export default async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -51,8 +63,9 @@ export default async function handler(request, response) {
   }
 
   const body = request.body && typeof request.body === "object" ? request.body : {};
-  const token = String(body.token || process.env.TELEGRAM_BOT_TOKEN || "").trim();
-  const tokenVerified = token.length >= 20;
+  const suppliedToken = String(body.token || "").trim();
+  const expectedToken = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
+  const tokenVerified = verifyToken(suppliedToken, expectedToken);
   const runtimeIdentity = resolveRuntimeIdentity();
   const mesh = loadRuntimeMesh();
 
