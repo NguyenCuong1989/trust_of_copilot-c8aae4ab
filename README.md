@@ -4,6 +4,14 @@
 
 A simple, transparent AI partner system focused on building trust through clear communication and collaborative interaction.
 
+> **Operational note:** this repository has evolved beyond the original educational partner prototype and now also participates in the APΩ / HyperAI runtime lineage, including Vercel serverless surfaces, Telegram integration, MCP mesh artifacts, orchestration workflows and system/event logs. The original trust-partner model remains part of the historical foundation, while the current deployment topology is documented separately to avoid confusing product philosophy with runtime architecture.
+
+## Runtime topology
+
+The current Vercel ↔ GitHub mapping, preservation rules, and release-flow guidance live in [`docs/VERCEL_GITHUB_TOPOLOGY.md`](docs/VERCEL_GITHUB_TOPOLOGY.md).
+
+Important maintenance rule: do not rename or delete Vercel projects, aliases, environments, or runtime snapshots merely for cosmetic cleanup until hard-coded callers and deployment-only source have been audited.
+
 ## Overview
 
 This project implements an AI partner that emphasizes:
@@ -90,10 +98,11 @@ This AI partner is designed to work **with** you, not just **for** you:
 - `example.py` - Demonstration and example usage
 - `config.json` - Configuration settings
 - `requirements.txt` - Python dependencies (minimal)
+- `docs/VERCEL_GITHUB_TOPOLOGY.md` - Current Vercel/GitHub runtime map and cleanup policy
 
 ## Contributing
 
-This is a simple, educational implementation focused on trust and transparency in AI partnerships. Feel free to extend and improve the trust model, add new personality types, or enhance the interaction capabilities.
+This system started as a simple educational implementation focused on trust and transparency in AI partnerships and has grown into a wider operational lineage. Changes that affect deployed runtime surfaces should be introduced through a branch/PR and verified in Preview before Production.
 
 ## License
 
