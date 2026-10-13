@@ -28,11 +28,22 @@ async function invoke(method, body) {
   return response;
 }
 
-test("rejects requests without a supplied token", async () => {
+function assertUnauthorized(response) {
+  assert.equal(response.statusCode, 401);
+  assert.deepEqual(response.body, {
+    ok: false,
+    error: "unauthorized",
+    endpoint: "/api/telegram/dispatch",
+  });
+  assert.equal("runtime_identity" in response.body, false);
+  assert.equal("runtime_mesh_synced" in response.body, false);
+  assert.equal("payload" in response.body, false);
+}
+
+test("rejects requests without a supplied token without exposing runtime metadata", async () => {
   process.env.TELEGRAM_BOT_TOKEN = "server-secret-token-123456789";
   const response = await invoke("POST", { message: "hello" });
-  assert.equal(response.statusCode, 401);
-  assert.equal(response.body.ok, false);
+  assertUnauthorized(response);
 });
 
 test("rejects arbitrary long tokens", async () => {
@@ -41,7 +52,16 @@ test("rejects arbitrary long tokens", async () => {
     token: "attacker-controlled-token-123",
     message: "hello",
   });
-  assert.equal(response.statusCode, 401);
+  assertUnauthorized(response);
+});
+
+test("rejects same-character-length unicode tokens without throwing", async () => {
+  process.env.TELEGRAM_BOT_TOKEN = "server-secret-token-123456789";
+  const response = await invoke("POST", {
+    token: "é".repeat(process.env.TELEGRAM_BOT_TOKEN.length),
+    message: "hello",
+  });
+  assertUnauthorized(response);
 });
 
 test("accepts only the configured token and redacts it", async () => {
@@ -59,7 +79,7 @@ test("rejects authentication when server secret is absent", async () => {
   const response = await invoke("POST", {
     token: "attacker-controlled-token-123",
   });
-  assert.equal(response.statusCode, 401);
+  assertUnauthorized(response);
 });
 
 test("rejects non-POST methods", async () => {
