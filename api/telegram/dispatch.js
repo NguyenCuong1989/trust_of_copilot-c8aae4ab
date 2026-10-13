@@ -42,14 +42,14 @@ function sanitizePayload(body) {
 }
 
 function verifyToken(suppliedToken, expectedToken) {
-  if (expectedToken.length < 20 || suppliedToken.length !== expectedToken.length) {
+  const supplied = Buffer.from(suppliedToken, "utf8");
+  const expected = Buffer.from(expectedToken, "utf8");
+
+  if (expected.length < 20 || supplied.length !== expected.length) {
     return false;
   }
 
-  return timingSafeEqual(
-    Buffer.from(suppliedToken, "utf8"),
-    Buffer.from(expectedToken, "utf8"),
-  );
+  return timingSafeEqual(supplied, expected);
 }
 
 export default async function handler(request, response) {
@@ -66,13 +66,22 @@ export default async function handler(request, response) {
   const suppliedToken = String(body.token || "").trim();
   const expectedToken = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
   const tokenVerified = verifyToken(suppliedToken, expectedToken);
+
+  if (!tokenVerified) {
+    return response.status(401).json({
+      ok: false,
+      error: "unauthorized",
+      endpoint: TELEGRAM_DISPATCH_PATH,
+    });
+  }
+
   const runtimeIdentity = resolveRuntimeIdentity();
   const mesh = loadRuntimeMesh();
 
-  return response.status(tokenVerified ? 200 : 401).json({
-    ok: tokenVerified,
+  return response.status(200).json({
+    ok: true,
     endpoint: TELEGRAM_DISPATCH_PATH,
-    token_verified: tokenVerified,
+    token_verified: true,
     lifecycle: "synced",
     mode: "sovereign-dispatcher",
     runtime_identity: runtimeIdentity,
