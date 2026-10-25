@@ -132,8 +132,10 @@ async function gh(path, method = "GET", body) {
 }
 
 async function findExistingIssueByPageId(pageId) {
-  const issues = await gh(`/repos/${owner}/${repo}/issues?state=all&per_page=100`);
-  return issues.find(issue => (issue.body || "").includes(`Notion Page ID: ${pageId}`));
+  const query = encodeURIComponent(`repo:${owner}/${repo} "${pageId}" in:body`);
+  const res = await gh(`/search/issues?q=${query}`);
+  if (res?.items?.length > 0) return res.items[0];
+  return null;
 }
 
 async function ensureLabel(name) {
